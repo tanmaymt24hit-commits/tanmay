@@ -1,0 +1,38 @@
+printBtn.addEventListener('click', async function() {
+    if (billItems.length === 0) {
+        alert('No items in the bill to print');
+        return;
+    }
+
+    // Select the bill summary table container
+    const billSummaryElement = document.querySelector('.bg-white.border.border-gray-200.rounded-lg.p-5');
+
+    // Use html2canvas to capture the bill summary as a canvas
+    const canvas = await html2canvas(billSummaryElement, { scale: 2 });
+
+    // Get image data from canvas
+    const imgData = canvas.toDataURL('image/png');
+
+    // Create a new jsPDF instance
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'pt',
+        format: 'a4'
+    });
+
+    // Calculate width and height to fit A4 page size
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+
+    // Calculate image dimensions to maintain aspect ratio
+    const imgProps = pdf.getImageProperties(imgData);
+    const imgWidth = pdfWidth - 40; // 20pt margin on each side
+    const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+
+    // Add the image to PDF
+    pdf.addImage(imgData, 'PNG', 20, 20, imgWidth, imgHeight);
+
+    // Save the PDF
+    pdf.save('MediTrack_Bill.pdf');
+});
